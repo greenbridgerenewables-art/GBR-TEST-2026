@@ -100,8 +100,9 @@ canvas{width:100%;height:100%;cursor:crosshair;touch-action:none;display:block;}
 .cstatus{font-size:.6rem;color:var(--text3);flex:1;}
 
 /* ── CONTROLS ── */
-.controls{position:sticky;bottom:0;background:rgba(255,255,255,.97);padding:12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;border-top:1px solid var(--border);z-index:2000;backdrop-filter:blur(12px);}
-@media(max-width:600px){.controls{grid-template-columns:1fr 1fr;}}
+.controls{position:sticky;bottom:0;background:rgba(255,255,255,.97);padding:12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;border-top:1px solid var(--border);z-index:2000;backdrop-filter:blur(12px);}
+@media(max-width:700px){.controls{grid-template-columns:1fr 1fr 1fr;}}
+@media(max-width:450px){.controls{grid-template-columns:1fr 1fr;}}
 .btn{padding:11px;border:none;border-radius:7px;color:white;font-weight:700;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--sans);letter-spacing:.02em;transition:transform .1s,filter .15s;}
 .btn:hover{filter:brightness(1.08);}
 .btn:active{transform:scale(.97);}
@@ -406,6 +407,7 @@ canvas{width:100%;height:100%;cursor:crosshair;touch-action:none;display:block;}
     <span class="pfill" id="pFill"></span>
     <span class="btxt">🖨️ COMPILE PDF</span>
   </button>
+  <button type="button" class="btn" style="background:#64748b;" onclick="clearForm()">🗑️ NEW JOB</button>
 </div>
 
 <!-- ══ SEND TO ENGINEER MODAL ══ -->
@@ -979,6 +981,66 @@ function tryLoadFromUrl() {
     if (el) { el.textContent = '📲 Form loaded from shared link'; el.className = 'asi show ok'; setTimeout(() => el.classList.remove('show'), 4000); }
   } catch(e) { console.warn('URL load failed:', e); }
 }
+/* ═══ CLEAR / NEW JOB ═══ */
+function clearForm() {
+  if (!confirm('Start a new job? This will clear all data on the form.\n\nMake sure you have saved or shared the current job first.')) return;
+
+  /* Clear all simple inputs, selects, textareas */
+  document.querySelectorAll('#form input:not([type=checkbox]):not([type=file]), #form select, #form textarea').forEach(el => {
+    el.value = '';
+  });
+
+  /* Reset checkboxes */
+  const chkInit = document.getElementById('checkInitial');
+  const chkPer  = document.getElementById('checkPeriodic');
+  if (chkInit) chkInit.checked = true;
+  if (chkPer)  chkPer.checked  = false;
+
+  /* Reset dates to today */
+  const today = new Date();
+  ['certDate','commDate','signDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.valueAsDate = today;
+  });
+
+  /* Reset engineer name and circuit default */
+  const engName = document.getElementById('engSignName');
+  if (engName) engName.value = 'GRAHAM EVANS';
+  const circ = document.getElementById('sysCircuits');
+  if (circ) circ.value = 'DC ONLY';
+
+  /* Clear logo */
+  document.getElementById('uiLogo').src = '';
+  document.getElementById('uiLogo').style.display = 'none';
+  document.getElementById('printLogo').src = '';
+  document.getElementById('printLogo').style.display = 'none';
+  document.getElementById('logoHint').style.display = '';
+
+  /* Clear signatures */
+  if (sigPad) sigPad.clear();
+
+  /* Reset inverter groups — one blank group */
+  document.getElementById('invCont').innerHTML = '';
+  addInv();
+
+  /* Reset meter — one blank row */
+  document.getElementById('meterCont').innerHTML = '';
+  addMeter();
+
+  /* Reset checklist — all ticked green */
+  initChecklist();
+
+  /* Clear autosave so old job doesn't restore */
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+
+  /* Confirm toast */
+  const asi = document.getElementById('asi');
+  if (asi) { asi.textContent = '✓ Cleared — ready for new job'; asi.className = 'asi show ok'; setTimeout(() => asi.classList.remove('show'), 3000); }
+
+  updateStats();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
 function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 </script>
