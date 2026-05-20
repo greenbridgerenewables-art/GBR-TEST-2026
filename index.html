@@ -1,1 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GreenBridge Solar Verification Suite</title>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══ SCREEN VARIABLES ══ */
+:root {
+  --accent:#22c55e; --accent-dark:#16a34a; --accent-dim:rgba(34,197,94,0.10);
+  --bg:#eef0ee; --surface:#fff; --surface2:#f6f8f6;
+  --border:#dde5dd; --border-strong:#b8ccb8;
+  --text:#141a14; --text2:#3d4f3d; --text3:#7a8f7a;
+  --yes:#22c55e; --no:#ef4444; --na:#3b82f6;
+  --danger:#ef4444; --warn:#f59e0b;
+  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);padding:14px;font-size:12px;line-height:1.4;}
+.wrap{max-width:1060px;margin:0 auto;padding-bottom:110px;}
 
+/* ── CARDS ── */
+.card{background:var(--surface);border-radius:10px;padding:16px;border:1px solid var(--border);margin-bottom:10px;position:relative;}
+.sec-title{font-size:.75rem;font-weight:700;color:var(--text);border-bottom:2px solid var(--accent);padding-bottom:5px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.05em;text-transform:uppercase;font-family:var(--mono);}
+.banner{background:var(--accent-dim);color:var(--accent-dark);padding:7px 12px;font-weight:700;font-size:.7rem;text-transform:uppercase;border-radius:6px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.06em;border:1px solid rgba(34,197,94,.3);}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:680px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+@media(max-width:860px) and (min-width:681px){.g4{grid-template-columns:1fr 1fr;}}
+
+/* ── FIELDS ── */
+.f{display:flex;flex-direction:column;margin-bottom:7px;}
+label{font-size:.58rem;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:3px;letter-spacing:.06em;font-family:var(--mono);}
+input,select,textarea{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:.84rem;font-family:var(--sans);background:var(--surface2);width:100%;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);background:var(--surface);}
+input[type=number]{font-family:var(--mono);}
+input.autofill{background:rgba(34,197,94,.07)!important;border-color:rgba(34,197,94,.5)!important;color:var(--accent-dark)!important;font-weight:600;}
+input.invalid{border-color:var(--danger)!important;}
+.fwarn{font-size:.58rem;color:var(--danger);font-family:var(--mono);margin-top:2px;display:none;}
+.fwarn.on{display:block;}
+
+/* ── TABLES ── */
+.tbl-wrap{width:100%;margin-top:6px;border-radius:6px;border:1px solid var(--border);overflow-x:auto;}
+table{width:100%;border-collapse:collapse;background:white;min-width:520px;table-layout:fixed;}
+th{background:#e8f5e8;color:#14532d;padding:7px 4px;border:1px solid #c8e6c9;font-size:.58rem;text-transform:uppercase;letter-spacing:.05em;font-family:var(--mono);}
+td{padding:3px;border:1px solid #eee;text-align:center;}
+.ti{border:none;padding:5px 2px;font-weight:600;text-align:center;font-size:.82rem;width:100%;background:transparent;font-family:var(--mono);color:var(--text);outline:none;}
+.ti:focus{background:var(--accent-dim);border-radius:3px;}
+tr.sr:hover td{background:var(--surface2);}
+
+/* ── STC BADGE ── */
+.stcb{font-size:.58rem;font-family:var(--mono);color:var(--accent-dark);background:rgba(34,197,94,.15);padding:1px 4px;border-radius:3px;display:none;white-space:nowrap;}
+.stcb.on{display:inline-block;}
+
+/* ── CHECKLIST ── */
+.clist{display:grid;grid-template-columns:1fr;gap:4px;}
+@media(min-width:580px){.clist{grid-template-columns:1fr 1fr;}}
+@media(min-width:860px){.clist{grid-template-columns:1fr 1fr 1fr;}}
+.ci{display:flex;flex-direction:column;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:.72rem;gap:5px;transition:background .1s,border-color .15s;}
+.ci:hover{background:var(--accent-dim);}
+.ci.fail{background:rgba(239,68,68,.06)!important;border-color:rgba(239,68,68,.35)!important;}
+.ci-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.clabel{flex:1;}
+.sbox{min-width:42px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:white;cursor:pointer;font-weight:700;font-size:.65rem;font-family:var(--mono);user-select:none;transition:transform .1s;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.sbox:active{transform:scale(.92);}
+.findings{display:none;width:100%;font-size:.72rem;font-family:var(--sans);padding:5px 8px;border:1px solid rgba(239,68,68,.4);border-radius:4px;background:rgba(239,68,68,.04);color:var(--text);outline:none;resize:vertical;min-height:48px;line-height:1.4;}
+.findings:focus{border-color:var(--danger);box-shadow:0 0 0 2px rgba(239,68,68,.15);}
+.findings.show{display:block;}
+/* Print — findings always visible if has content */
+@media print{
+  .findings{display:block!important;border:0.5pt solid #e88!important;background:rgba(255,220,220,.3)!important;font-size:7pt!important;padding:3pt!important;min-height:0!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  .findings:empty,.findings[value=""]{display:none!important;}
+  .ci.fail{background:rgba(239,68,68,.05)!important;border-color:#e88!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+}
+
+/* ── SIG ── */
+.sigbox{border:2px dashed var(--border-strong);background:var(--surface2);height:120px;border-radius:7px;overflow:hidden;}
+canvas{width:100%;height:100%;cursor:crosshair;touch-action:none;display:block;}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px;}
+.sc{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;}
+.sc.hi{border-color:var(--accent);background:var(--accent-dim);}
+.slabel{font-size:.58rem;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.sval{font-size:1.3rem;font-weight:700;color:var(--text);font-family:var(--mono);line-height:1;}
+.sc.hi .sval{color:var(--accent-dark);}
+.sunit{font-size:.6rem;color:var(--text2);margin-left:2px;}
+
+/* ── COMPLETION ── */
+.cpwrap{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:7px;border:1px solid var(--border);margin-bottom:10px;}
+.ctrack{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.cfill{height:100%;background:var(--accent);border-radius:3px;transition:width .4s ease;width:0%;}
+.cpct{font-size:.62rem;font-family:var(--mono);font-weight:700;color:var(--text2);white-space:nowrap;min-width:44px;text-align:right;}
+.cstatus{font-size:.6rem;color:var(--text3);flex:1;}
+
+/* ── CONTROLS ── */
+.controls{position:sticky;bottom:0;background:rgba(255,255,255,.97);padding:12px 16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;border-top:1px solid var(--border);z-index:2000;backdrop-filter:blur(12px);}
+@media(max-width:700px){.controls{grid-template-columns:1fr 1fr 1fr;}}
+@media(max-width:450px){.controls{grid-template-columns:1fr 1fr;}}
+.btn{padding:11px;border:none;border-radius:7px;color:white;font-weight:700;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--sans);letter-spacing:.02em;transition:transform .1s,filter .15s;}
+.btn:hover{filter:brightness(1.08);}
+.btn:active{transform:scale(.97);}
+.bgreen{background:var(--accent);}
+.bblue{background:#2563eb;}
+.bpurple{background:#7c3aed;}
+.bsm{background:var(--text2);font-size:.65rem;padding:5px 9px;border:none;border-radius:4px;color:white;cursor:pointer;font-family:var(--sans);}
+.badd{background:var(--accent);color:white;border:none;padding:4px 10px;font-size:.62rem;border-radius:4px;cursor:pointer;font-weight:700;font-family:var(--mono);}
+.bcompile{position:relative;overflow:hidden;}
+.bcompile .pfill{position:absolute;left:0;top:0;height:100%;background:rgba(0,0,0,.18);transition:width .4s;pointer-events:none;}
+.bcompile .btxt{position:relative;z-index:1;}
+
+/* ── AUTOSAVE ── */
+.asi{position:fixed;top:10px;right:12px;font-size:.6rem;font-family:var(--mono);color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;z-index:3000;opacity:0;transition:opacity .3s;pointer-events:none;}
+.asi.show{opacity:1;}
+.asi.ok{color:var(--accent-dark);border-color:var(--accent);}
+
+/* ── LOGO ── */
+.logoarea{cursor:pointer;border:2px dashed var(--border-strong);padding:10px;border-radius:7px;min-width:140px;text-align:center;transition:border-color .2s,background .2s;}
+.logoarea:hover{border-color:var(--accent);background:var(--accent-dim);}
+
+/* ══════════════════════════════════════
+   PRINT STYLES — complete overhaul
+   Goal: professional A4 certificate look
+   with colour preserved where it matters
+══════════════════════════════════════ */
+.print-footer{display:none;}
+
+@media print {
+  /* ── HIDE SCREEN-ONLY ELEMENTS ── */
+  .no-print,.asi,.stats,.cpwrap,.controls{display:none!important;}
+
+  /* ── PAGE SETUP ── */
+  @page{size:A4 portrait;margin:1.2cm 1.2cm 2cm 1.2cm;}
+  html,body{background:white!important;color:#000!important;font-size:9pt!important;font-family:'IBM Plex Sans',Arial,sans-serif!important;padding:0!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  .wrap{max-width:100%!important;padding:0!important;}
+
+  /* ── PRINT HEADER — full-width certificate banner ── */
+  .print-header-block{display:flex!important;justify-content:space-between;align-items:center;padding:10pt 14pt;background:#1a2e1a!important;color:white!important;border-radius:0;margin-bottom:10pt;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  .print-header-block h1{font-size:14pt!important;color:white!important;font-weight:700!important;letter-spacing:-.01em;}
+  .print-header-block p{font-size:8pt!important;color:#86efac!important;font-family:'IBM Plex Mono',monospace!important;}
+  #printLogo{display:block!important;max-height:50pt;max-width:120pt;}
+
+  /* ── CARDS ── */
+  .card{border:1pt solid #999!important;border-radius:0!important;margin-bottom:7pt!important;padding:8pt 10pt!important;box-shadow:none!important;overflow:visible!important;page-break-inside:avoid;}
+
+  /* ── SECTION TITLES ── */
+  .sec-title{font-size:7.5pt!important;border-bottom:1.5pt solid #1a2e1a!important;color:#1a2e1a!important;padding-bottom:3pt!important;margin-bottom:7pt!important;font-family:'IBM Plex Mono',monospace!important;}
+
+  /* ── BANNERS — keep green tint in print ── */
+  .banner{background:#e8f5e8!important;color:#14532d!important;border:1pt solid #a8d5a8!important;border-radius:0!important;font-size:7pt!important;padding:4pt 8pt!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+
+  /* ── FIELDS ── */
+  label{font-size:6.5pt!important;color:#444!important;}
+  input,select,textarea{border:none!important;border-bottom:0.75pt solid #999!important;background:transparent!important;color:#000!important;font-size:9pt!important;padding:2pt 0!important;border-radius:0!important;box-shadow:none!important;}
+  input[readonly]{color:#1a7a3a!important;font-weight:600;}
+  textarea{border:0.75pt solid #999!important;padding:4pt!important;min-height:36pt!important;white-space:pre-wrap!important;overflow:visible!important;}
+
+  /* ── TABLES ── */
+  .tbl-wrap{overflow:visible!important;border:1pt solid #999!important;border-radius:0!important;}
+  table{min-width:100%!important;border-collapse:collapse!important;}
+  th{background:#d4edda!important;color:#14532d!important;border:0.75pt solid #999!important;font-size:6.5pt!important;padding:4pt 3pt!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  td{border:0.75pt solid #ccc!important;padding:4pt 3pt!important;font-size:8.5pt!important;}
+  .ti{font-size:8.5pt!important;font-weight:600;}
+  .stcb{display:none!important;}
+  tr.sr:hover td{background:transparent!important;}
+
+  /* ── CHECKLIST — preserve status colours ── */
+  .clist{grid-template-columns:1fr 1fr 1fr!important;gap:3pt!important;}
+  .ci{border:0.5pt solid #ccc!important;border-radius:0!important;padding:3pt 6pt!important;background:white!important;}
+  .ci:hover{background:white!important;}
+  .clabel{font-size:7pt!important;}
+  .sbox{font-size:6.5pt!important;min-width:34pt;height:18pt;border-radius:3pt;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  /* Yes = green, No = red, N/A = blue — forced in print */
+  .sbox[style*="yes"]{background:#22c55e!important;}
+  .sbox[style*="no"]{background:#ef4444!important;}
+  .sbox[style*="na"]{background:#3b82f6!important;}
+
+  /* ── SIGNATURE ── */
+  .sigbox{border:0.75pt solid #999!important;height:70pt!important;background:white!important;border-radius:0!important;}
+
+  /* ── FOOTER — static, not fixed, so it doesn't overlap ── */
+  .print-footer{display:block!important;position:static!important;text-align:center;border-top:1pt solid #ccc;padding:6pt 0 0;margin-top:12pt;font-size:7pt!important;}
+  .f-green{color:#3a8a3a!important;font-weight:700;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  .f-grey{color:#666!important;}
+  .f-blue{color:#0369a1!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+
+  /* ── PAGE BREAK HELPERS ── */
+  .inv-card{page-break-inside:avoid;}
+  .card.commission-card{page-break-before:auto;}
+}
+</style>
+</head>
+<body>
+
+<div class="asi" id="asi">● autosaved</div>
+
+<div class="wrap">
+<form id="form" autocomplete="off">
+
+<!-- ══ HEADER CARD ══ -->
+<div class="card">
+  <!-- Screen logo upload -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:12px;">
+    <div class="logoarea no-print" onclick="document.getElementById('logoInput').click()">
+      <input type="file" id="logoInput" hidden accept="image/*" onchange="loadLogo(this)">
+      <img id="uiLogo" src="" style="display:none;max-height:52px;max-width:160px;">
+      <span id="logoHint" style="font-size:.6rem;color:var(--text3);font-family:var(--mono);">TAP TO UPLOAD LOGO</span>
+    </div>
+    <!-- Print header block (hidden on screen) -->
+    <div class="print-header-block" style="display:none;width:100%;">
+      <div>
+        <img id="printLogo" src="" style="display:none;max-height:50pt;">
+      </div>
+      <div style="text-align:right;">
+        <h1 style="margin:0;">SOLAR PV VERIFICATION</h1>
+        <p style="margin:2pt 0 0;">PROFESSIONAL COMPLIANCE REPORT</p>
+        <p style="margin:3pt 0 0;font-size:6.5pt;color:#86efac;font-family:'IBM Plex Mono',monospace;">MIS 3002:2025 &nbsp;|&nbsp; BS EN 62446-1:2016+A1:2018 &nbsp;|&nbsp; IEC 61829</p>
+      </div>
+    </div>
+    <!-- Screen title -->
+    <div style="text-align:right;" class="no-print">
+      <h1 style="font-size:1.45rem;color:var(--text);font-weight:700;letter-spacing:-.02em;margin:0;">SOLAR PV VERIFICATION</h1>
+      <p style="font-weight:600;color:var(--accent);font-size:.82rem;font-family:var(--mono);margin:2px 0 5px;">PROFESSIONAL COMPLIANCE REPORT</p>
+      <div style="display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;">
+        <span style="font-size:.55rem;font-family:var(--mono);background:#f0f4ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:4px;padding:2px 6px;">MIS 3002:2025</span>
+        <span style="font-size:.55rem;font-family:var(--mono);background:#f0f4ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:4px;padding:2px 6px;">BS EN 62446-1:2016+A1</span>
+        <span style="font-size:.55rem;font-family:var(--mono);background:#f0f4ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:4px;padding:2px 6px;">IEC 61829</span>
+      </div>
+    </div>
+  </div>
+  <div class="g4">
+    <div class="f"><label>Project / Ref Number</label><input type="text" id="projNo" placeholder="SPVCERT-2026" oninput="sched()"></div>
+    <div class="f"><label>Inspected By</label><input type="text" id="engName" placeholder="Engineer Name" oninput="sched()"></div>
+    <div class="f"><label>Commissioning Date</label><input type="date" id="commDate" oninput="sched()"></div>
+    <div class="f"><label>Issue Date</label><input type="date" id="certDate" oninput="sched()"></div>
+  </div>
+  <div style="margin-top:6px;display:flex;gap:16px;align-items:center;">
+    <label style="font-size:.72rem;text-transform:none;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="checkInitial" checked onchange="sched()"> Initial Verification</label>
+    <label style="font-size:.72rem;text-transform:none;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="checkPeriodic" onchange="sched()"> Periodic Inspection</label>
+  </div>
+</div>
+
+<!-- ══ SITE + BILLING ══ -->
+<div class="card">
+  <div class="g2">
+    <div>
+      <div style="font-size:.65rem;font-weight:700;color:var(--accent-dark);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;">Installation Site</div>
+      <div class="f"><label>Site Name / Occupier</label><input type="text" id="siteName" oninput="sched()"></div>
+      <div class="f"><label>Street Address</label><input type="text" id="siteAddress" oninput="sched()"></div>
+      <div class="f"><label>Postcode</label><input type="text" id="sitePostcode" oninput="sched()"></div>
+    </div>
+    <div style="border-left:2px dashed var(--border);padding-left:14px;">
+      <div style="font-size:.65rem;font-weight:700;color:#7c3aed;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;">Billing Client</div>
+      <div class="f"><label>Company Name</label><input type="text" id="billCompany" oninput="sched()"></div>
+      <div class="f"><label>Client Address</label><input type="text" id="billAddress" oninput="sched()"></div>
+      <div class="f"><label>Contact Phone</label><input type="text" id="billPhone" oninput="sched()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SYSTEM DETAILS ══ -->
+<div class="card">
+  <div class="banner">Details of the Solar PV System</div>
+  <div class="g2">
+    <div class="f"><label>Description of Installation</label>
+      <textarea id="sysDesc" style="min-height:80px;" placeholder="e.g. 2 × PV system on south-facing roof..." oninput="sched()"></textarea>
+    </div>
+    <div>
+      <div class="g2">
+        <div class="f"><label>kW DC (auto-calc)</label><input type="number" step="0.01" id="kwDc" class="autofill" placeholder="0.00" readonly title="Automatically calculated from module wattage × total modules"></div>
+        <div class="f"><label>Location</label><input type="text" id="sysLoc" oninput="sched()"></div>
+        <div class="f"><label>Est. Performance (kWh/yr)</label><input type="number" id="sysPerf" oninput="sched()"></div>
+        <div class="f"><label>Circuits</label><input type="text" value="DC ONLY" id="sysCircuits" oninput="sched()"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HARDWARE ══ -->
+<div class="card">
+  <div class="sec-title">Hardware Specifications</div>
+  <div class="g4">
+    <div class="f"><label>Module Model</label><input type="text" id="modModel" oninput="sched()"></div>
+    <div class="f">
+      <label>Wattage (W)</label>
+      <input type="number" id="modWatt" min="0" placeholder="e.g. 400" oninput="validateHW();updateStats();sched()">
+      <span class="fwarn" id="wWatt">Must be &gt; 0</span>
+    </div>
+    <div class="f">
+      <label>Voc STC (V)</label>
+      <input type="number" step="0.1" id="modVoc" min="0" placeholder="e.g. 41.0" oninput="validateHW();sched()">
+      <span class="fwarn" id="wVoc">Must be &gt; 0</span>
+    </div>
+    <div class="f">
+      <label>Isc STC (A)</label>
+      <input type="number" step="0.01" id="modIsc" min="0" placeholder="e.g. 12.5" oninput="validateHW();sched()">
+      <span class="fwarn" id="wIsc">Must be &gt; 0</span>
+    </div>
+  </div>
+  <div class="g3" style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+    <div class="f"><label>Roof Type</label><select id="roofType" onchange="sched()"><option>Concrete Tile</option><option>Slate</option><option>Flat</option><option>Trap</option><option>Standing Seam</option><option>Other</option></select></div>
+    <div class="f"><label>Mounting Make</label><input type="text" id="mountMake" oninput="sched()"></div>
+    <div class="f"><label>Temp Coefficient β Voc (%/°C)</label><input type="number" step="0.001" id="modBeta" placeholder="e.g. -0.29" oninput="sched()"></div>
+  </div>
+</div>
+
+<!-- ══ TEST INSTRUMENTS ══ -->
+<div class="card">
+  <div class="sec-title" style="color:#c2410c;border-bottom-color:#f97316;">Test Instruments &nbsp;<span style="font-size:.6rem;font-weight:400;color:var(--text3);">BS EN 62446-1 Cl. 4.1 — calibration within 12 months required</span></div>
+  <div class="g3">
+    <div>
+      <div style="font-size:.6rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:6px;">PV / DC Tester</div>
+      <div class="f"><label>Make &amp; Model</label><input type="text" id="tstr1" placeholder="e.g. Seaward PV210" oninput="sched()"></div>
+      <div class="g2">
+        <div class="f"><label>Serial No.</label><input type="text" id="tstr1Ser" placeholder="Serial" oninput="sched()"></div>
+        <div class="f"><label>Cal. Due Date</label><input type="date" id="tstr1Cal" oninput="sched()"></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:.6rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:6px;">Irradiance Meter</div>
+      <div class="f"><label>Make &amp; Model</label><input type="text" id="tstr2" placeholder="e.g. TES 1333R" oninput="sched()"></div>
+      <div class="g2">
+        <div class="f"><label>Serial No.</label><input type="text" id="tstr2Ser" placeholder="Serial" oninput="sched()"></div>
+        <div class="f"><label>Cal. Due Date</label><input type="date" id="tstr2Cal" oninput="sched()"></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:.6rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:6px;">Insulation / Continuity Tester</div>
+      <div class="f"><label>Make &amp; Model</label><input type="text" id="tstr3" placeholder="e.g. Fluke 1550C" oninput="sched()"></div>
+      <div class="g2">
+        <div class="f"><label>Serial No.</label><input type="text" id="tstr3Ser" placeholder="Serial" oninput="sched()"></div>
+        <div class="f"><label>Cal. Due Date</label><input type="date" id="tstr3Cal" oninput="sched()"></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ══ LIVE STATS (screen only) ══ -->
+<div class="stats no-print">
+  <div class="sc hi"><div class="slabel">Total DC</div><div class="sval" id="stKw">0.00<span class="sunit">kW</span></div></div>
+  <div class="sc"><div class="slabel">Inverters</div><div class="sval" id="stInv">0</div></div>
+  <div class="sc"><div class="slabel">Strings</div><div class="sval" id="stStr">0</div></div>
+  <div class="sc"><div class="slabel">Modules</div><div class="sval" id="stMod">0</div></div>
+  <div class="sc"><div class="slabel">Avg Voc</div><div class="sval" id="stVoc">—</div></div>
+  <div class="sc"><div class="slabel">Checklist ✓</div><div class="sval" id="stChk">0/0</div></div>
+</div>
+
+<!-- ══ INVERTER GROUPS ══ -->
+<div id="invCont"></div>
+<button type="button" class="btn bblue no-print" style="width:100%;margin-bottom:10px;" onclick="addInv()">+ Add Inverter &amp; Array Test Results</button>
+
+<!-- ══ CHECKLIST ══ -->
+<div class="card">
+  <div class="sec-title">Maintenance Schedule &amp; Safety Outcomes</div>
+  <div class="clist" id="clistGrid"></div>
+</div>
+
+<!-- ══ COMMISSIONING ══ -->
+<div class="card commission-card">
+  <div class="banner">Commissioning &amp; Engineer Log
+    <button type="button" class="badd no-print" onclick="addMeter()">+ Add Gen Meter</button>
+  </div>
+  <div class="g3">
+    <div id="meterCont"></div>
+    <div class="f">
+      <label>Engineer Signature</label>
+      <div class="sigbox"><canvas id="sigCanvas"></canvas></div>
+      <button type="button" class="bsm no-print" style="margin-top:4px;" onclick="clearSig()">Clear Signature</button>
+    </div>
+    <div>
+      <div class="f"><label>Name (Capitals)</label><input type="text" id="engSignName" value="GRAHAM EVANS" style="font-weight:700;" oninput="sched()"></div>
+      <div class="f"><label>Date</label><input type="date" id="signDate" oninput="sched()"></div>
+      <div class="f"><label>Qualifications / Reg. No.</label><input type="text" id="engQual" placeholder="e.g. City &amp; Guilds 2399" oninput="sched()"></div>
+      <div class="f"><label>DNO Notification Ref (G98/G99)</label><input type="text" id="dnoRef" placeholder="G98/G99 reference no." oninput="sched()"></div>
+    </div>
+  </div>
+  <div class="f" style="margin-top:14px;border-top:1px dashed var(--border);padding-top:12px;">
+    <label>Engineer's Comments / Site Observations</label>
+    <textarea id="engComments" style="min-height:80px;" placeholder="Detailed site observations, remedial actions, next visit date..." oninput="sched()"></textarea>
+  </div>
+</div>
+
+<!-- ══ PRINT FOOTER (static in print, hidden on screen) ══ -->
+<div class="print-footer">
+  <div class="f-green">GreenBridge Renewables &nbsp;|&nbsp; Cropton House, Three Tuns Lane, Formby, Liverpool L37 4AQ &nbsp;|&nbsp; 0151 345 6739</div>
+  <div class="f-grey">Co No: 12464160 &nbsp;|&nbsp; VAT: 345212625</div>
+  <div class="f-blue">www.gb-r.co.uk &nbsp;|&nbsp; sales@gb-r.co.uk</div>
+</div>
+
+<!-- ══ COMPLETION + CONTROLS ══ -->
+<div class="cpwrap no-print">
+  <span class="cstatus" id="cStatus">Fill in form fields to track completion</span>
+  <div class="ctrack"><div class="cfill" id="cFill"></div></div>
+  <span class="cpct" id="cPct">0%</span>
+</div>
+
+<div class="controls no-print">
+  <label class="btn bpurple">📂 LOAD JSON<input type="file" accept=".json" hidden onchange="loadData(event)"></label>
+  <button type="button" class="btn bblue" onclick="saveData()" id="saveBtn">💾 SAVE / SHARE</button>
+  <button type="button" class="btn" style="background:#0ea5e9;" onclick="sendToEngineer()">📲 SEND TO ENGINEER</button>
+  <button type="button" class="btn bgreen bcompile" onclick="compilePrint()">
+    <span class="pfill" id="pFill"></span>
+    <span class="btxt">🖨️ COMPILE PDF</span>
+  </button>
+  <button type="button" class="btn" style="background:#64748b;" onclick="clearForm()">🗑️ NEW JOB</button>
+</div>
+
+<!-- ══ SEND TO ENGINEER MODAL ══ -->
+<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--surface);border-radius:12px;padding:22px;max-width:520px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.25);">
+    <div style="font-size:.8rem;font-weight:700;color:var(--text);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Send Pre-filled Form to Engineer</div>
+    <p style="font-size:.72rem;color:var(--text2);margin-bottom:14px;line-height:1.6;">Copy this link and send via WhatsApp, SMS or email. When your engineer opens it, the form will load with all your office details pre-filled — he just adds the test results on site.</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input type="text" id="shareUrl" readonly style="flex:1;font-size:.7rem;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);">
+      <button onclick="copyShareUrl()" style="background:var(--accent);color:white;border:none;border-radius:6px;padding:8px 14px;font-weight:700;font-size:.75rem;cursor:pointer;white-space:nowrap;" id="copyBtn">Copy</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+      <button onclick="shareVia('whatsapp')" style="background:#25D366;color:white;border:none;border-radius:7px;padding:10px 6px;font-weight:700;font-size:.72rem;cursor:pointer;">💬 WhatsApp</button>
+      <button onclick="shareVia('sms')"      style="background:#3b82f6;color:white;border:none;border-radius:7px;padding:10px 6px;font-weight:700;font-size:.72rem;cursor:pointer;">📱 SMS</button>
+      <button onclick="shareVia('email')"    style="background:#6366f1;color:white;border:none;border-radius:7px;padding:10px 6px;font-weight:700;font-size:.72rem;cursor:pointer;">✉️ Email</button>
+    </div>
+    <div style="font-size:.62rem;color:var(--text3);font-family:var(--mono);margin-bottom:14px;" id="urlSizeNote"></div>
+    <button onclick="closeShareModal()" style="width:100%;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:7px;padding:10px;font-weight:700;font-size:.78rem;cursor:pointer;">Close</button>
+  </div>
+</div>
+
+</form>
+</div>
+
+<script>
+/* ═══ CONSTANTS ═══ */
+const LS_KEY = 'gb_solar_v4';
+const TASKS = [
+  "Visual check modules from ground level","Visual check of inverter access","Recorded generation is increasing",
+  "Visual check for structural distress","AC & DC isolators (Functional/Ingress)","All labelling & signage present",
+  "Emergency shutdown procedure visible","Module clamps secure (Torque sample)","String insulation resistance test",
+  "Cables adequately supported and free of damage","Reduce shading from vegetation growth","DC junction boxes where present",
+  "Integrity of fuses and surge protectors","Inverter(s) mounted securely","Inverter(s) ventilated (Fans/Airflow)",
+  "Externally mounted inverters free of signs of water ingress","Inverter fault log(s)","AC voltage at inverter(s) — assess overvoltage risk",
+  "DC connectors (Secure, free of damage, supported)","Clean modules (Shallow pitch/dusty)","Test DC circuits (Voc, Isc, Earth Leakage)",
+  "Mounting rails secure and free of distortion","String series resistance test","Potential Induced Degradation test",
+  "Thermographic survey for cells/components","Generation in line with prediction"
+];
+
+let sigPad, asTimer;
+
+/* ═══ INIT ═══ */
+window.addEventListener('load', () => {
+  initSig();
+  initChecklist();
+  addInv();
+  addMeter();
+  document.getElementById('certDate').valueAsDate = new Date();
+  document.getElementById('commDate').valueAsDate = new Date();
+  document.getElementById('signDate').valueAsDate = new Date();
+  tryRestore();
+  tryLoadFromUrl();
+  setTimeout(updateStats, 120);
+});
+
+/* ═══ SIGNATURE ═══ */
+function initSig() {
+  const canvas = document.getElementById('sigCanvas');
+  sigPad = new SignaturePad(canvas, { penColor:'#00008b', minWidth:1, maxWidth:2.5 });
+  function resize() {
+    const saved = sigPad.isEmpty() ? null : sigPad.toDataURL();
+    const r = Math.max(window.devicePixelRatio||1,1);
+    canvas.width  = canvas.offsetWidth  * r;
+    canvas.height = canvas.offsetHeight * r;
+    canvas.getContext('2d').scale(r,r);
+    sigPad.clear();
+    if (saved) sigPad.fromDataURL(saved);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  /* Update completion when user signs */
+  canvas.addEventListener('pointerup', () => { updateStats(); sched(); });
+}
+function clearSig() { sigPad && sigPad.clear(); updateStats(); }
+
+/* ═══ CHECKLIST ═══ */
+function initChecklist(states=null) {
+  const g = document.getElementById('clistGrid');
+  g.innerHTML = '';
+  TASKS.forEach((t,i) => {
+    const state = states ? states[i] : null;
+    const s = state ? (typeof state === 'string' ? state : state.status || '✓') : '✓';
+    const findings = state && typeof state === 'object' ? (state.findings || '') : '';
+    const col = s==='X' ? 'var(--no)' : s==='N/A' ? 'var(--na)' : 'var(--yes)';
+    const isFail = s === 'X';
+    const d = document.createElement('div');
+    d.className = 'ci' + (isFail ? ' fail' : '');
+    d.innerHTML = `
+      <div class="ci-top">
+        <span class="clabel">${t}</span>
+        <div class="sbox" style="background:${col}" onclick="toggleBox(this)">${s}</div>
+      </div>
+      <textarea class="findings${isFail ? ' show' : ''}" placeholder="Record findings / remedial action required…" oninput="sched()">${findings}</textarea>`;
+    g.appendChild(d);
+  });
+  updateStats();
+}
+function toggleBox(el) {
+  const cur = el.innerText;
+  if (cur==='✓')  { el.innerText='X';   el.style.background='var(--no)'; }
+  else if(cur==='X') { el.innerText='N/A'; el.style.background='var(--na)'; }
+  else             { el.innerText='✓';   el.style.background='var(--yes)'; }
+  const ci = el.closest('.ci');
+  const findings = ci.querySelector('.findings');
+  const isFail = el.innerText === 'X';
+  ci.classList.toggle('fail', isFail);
+  if (findings) {
+    findings.classList.toggle('show', isFail);
+    if (isFail) setTimeout(() => findings.focus(), 50);
+    else findings.value = '';
+  }
+  updateStats(); sched();
+}
+
+/* ═══ METER ROWS ═══ */
+function addMeter(d=null) {
+  const c = document.getElementById('meterCont');
+  const n = c.querySelectorAll('.mr').length + 1;
+  const div = document.createElement('div');
+  div.className = 'mr'; div.style.marginBottom='10px';
+  div.innerHTML = `
+    <label style="display:flex;justify-content:space-between;">Meter ${n} Serial
+      ${n>1?`<span class="no-print" style="color:var(--danger);cursor:pointer;font-family:var(--mono);font-size:.58rem;" onclick="this.closest('.mr').remove();sched()">✕ Remove</span>`:''}
+    </label>
+    <input type="text" class="ms" placeholder="Meter Serial" value="${d?esc(d.serial):''}" style="margin-bottom:4px;" oninput="sched()">
+    <label>Reading (kWh)</label>
+    <input type="number" step="0.01" class="mr2" value="${d?d.reading:''}" min="0" oninput="sched()">`;
+  c.appendChild(div);
+}
+
+/* ═══ INVERTER GROUPS ═══ */
+function addInv(inv=null) {
+  const cont = document.getElementById('invCont');
+  const id = typeof crypto!=='undefined'&&crypto.randomUUID ? crypto.randomUUID().replace(/-/g,'') : Date.now().toString(36)+Math.random().toString(36).slice(2);
+  const card = document.createElement('div');
+  card.className = 'card inv-card';
+  card.dataset.id = id;
+  card.innerHTML = `
+    <div class="sec-title">Inverter Group &amp; Array Table
+      <button type="button" class="bsm no-print" style="background:var(--danger);" onclick="this.closest('.inv-card').remove();updateStats();sched()">Remove</button>
+    </div>
+    <div class="g4" style="margin-bottom:10px;">
+      <div class="f"><label>Inverter Make / Model</label><input type="text" class="imk" value="${inv?esc(inv.make||''):''}" oninput="sched()"></div>
+      <div class="f"><label>Inverter Serial No.</label><input type="text" class="is" value="${inv?esc(inv.serial||''):''}" oninput="sched()"></div>
+      <div class="f"><label>L.O.M (Anti-Islanding) Test</label><select class="il" onchange="sched()">
+        <option${!inv||inv.lom==='PASS'?' selected':''}>PASS</option>
+        <option${inv&&inv.lom==='FAIL'?' selected':''}>FAIL</option>
+      </select></div>
+      <div class="f"><label>Overall Status</label><select class="iv" onchange="sched()">
+        <option${!inv||inv.status==='SATISFACTORY'?' selected':''}>SATISFACTORY</option>
+        <option${inv&&inv.status==='FAULT'?' selected':''}>FAULT</option>
+      </select></div>
+    </div>
+    <!-- Array Insulation Resistance — BS EN 62446-1 Cl. 5.3.4 -->
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-size:.6rem;font-weight:700;color:#9a3412;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Array Insulation Resistance &amp; Continuity — BS EN 62446-1 Cl. 5.3.3 / 5.3.4</div>
+      <div class="g4">
+        <div class="f"><label>Test Voltage (V DC)</label>
+          <select class="irtv" onchange="sched()"><option value="500">500 V</option><option value="1000" selected>1000 V</option></select>
+        </div>
+        <div class="f"><label>Pos – Earth (MΩ) ≥1 MΩ</label><input type="number" step="0.1" class="irpe" value="${inv?inv.irPosEarth||'':''}" min="0" placeholder="e.g. 200" oninput="sched()"></div>
+        <div class="f"><label>Neg – Earth (MΩ) ≥1 MΩ</label><input type="number" step="0.1" class="irne" value="${inv?inv.irNegEarth||'':''}" min="0" placeholder="e.g. 200" oninput="sched()"></div>
+        <div class="f"><label>Earth Continuity (Ω) (where fitted)</label><input type="number" step="0.01" class="iec" value="${inv?inv.earthCont||'':''}" min="0" placeholder="Ω" oninput="sched()"></div>
+      </div>
+    </div>
+    <!-- Array Isolator -->
+    <div class="g4" style="margin-bottom:10px;">
+      <div class="f"><label>Array Isolator Rating (A)</label><input type="number" class="iia" value="${inv?inv.isoA||'':''}" min="0" oninput="sched()"></div>
+      <div class="f"><label>Array Isolator Rating (V)</label><input type="number" class="iiv" value="${inv?inv.isoV||'':''}" min="0" oninput="sched()"></div>
+      <div class="f"><label>Array Isolator Location</label><input type="text" class="iil" value="${inv?esc(inv.isoLoc||''):''}" oninput="sched()"></div>
+      <div class="f" style="justify-content:flex-end;padding-top:18px;">
+        <button type="button" class="badd no-print" onclick="addStr('${id}')">+ String</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:22px;" rowspan="2">#</th>
+            <th style="width:40px;" rowspan="2">MPPT</th>
+            <th style="width:34px;" rowspan="2">QTY</th>
+            <th colspan="2" style="background:#dbeafe;color:#1e40af;border-color:#bfdbfe;">Design STC</th>
+            <th colspan="3" style="background:#fff7ed;color:#9a3412;border-color:#fed7aa;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Measured</th>
+            <th colspan="3" style="background:#f3e8ff;color:#6d28d9;border-color:#ddd6fe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">String Fuse / OCP <span style="font-weight:400;font-size:.55rem;opacity:.75;">(N/A if not fitted)</span></th>
+            <th style="width:46px;" rowspan="2">Polarity ✓</th>
+            <th style="width:46px;" rowspan="2">Insul. Result</th>
+            <th class="no-print" rowspan="2" style="width:22px;"></th>
+          </tr>
+          <tr>
+            <th style="background:#dbeafe;color:#1e40af;border-color:#bfdbfe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Voc (V)</th>
+            <th style="background:#dbeafe;color:#1e40af;border-color:#bfdbfe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Isc (A)</th>
+            <th style="background:#fff7ed;color:#9a3412;border-color:#fed7aa;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Voc (V)</th>
+            <th style="background:#fff7ed;color:#9a3412;border-color:#fed7aa;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Isc (A)</th>
+            <th style="background:#fff7ed;color:#9a3412;border-color:#fed7aa;width:48px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Irr W/m²</th>
+            <th style="background:#f3e8ff;color:#6d28d9;border-color:#ddd6fe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Fuse Type/A</th>
+            <th style="background:#f3e8ff;color:#6d28d9;border-color:#ddd6fe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">DC V Rating</th>
+            <th style="background:#f3e8ff;color:#6d28d9;border-color:#ddd6fe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">kA Cap.</th>
+          </tr>
+        </thead>
+        <tbody id="body-${id}"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:5px;font-size:.58rem;color:var(--text3);font-family:var(--mono);" id="stcnote-${id}"></div>`;
+  cont.appendChild(card);
+  if (inv&&inv.strings) inv.strings.forEach(s=>addStr(id,s)); else addStr(id);
+  updateStats();
+}
+
+function addStr(id, d=null) {
+  const body = document.getElementById('body-'+id);
+  if (!body) return;
+  const n = body.children.length+1;
+  const mppt = Math.ceil(n/2)+(n%2===0?'b':'a');
+  const tr = document.createElement('tr');
+  tr.className = 'sr';
+  tr.innerHTML = `
+    <td style="color:var(--text3);font-family:var(--mono);font-size:.72rem;">${n}</td>
+    <td><input type="text" class="ti sm" value="${d?esc(d.mppt):mppt}" oninput="sched()"></td>
+    <td><input type="number" class="ti sq" value="${d?d.qty:15}" min="1" oninput="updateStats();sched()"></td>
+    <td><input type="number" class="ti sdv" step="0.1" value="${d?d.dVoc:''}" min="0" oninput="sched()" title="Design Voc at STC"></td>
+    <td><input type="number" class="ti sdi" step="0.01" value="${d?d.dIsc:''}" min="0" oninput="sched()" title="Design Isc at STC"></td>
+    <td>
+      <input type="number" class="ti sv" step="0.1" value="${d?d.voc:''}" min="0" oninput="stc('${id}');updateStats();sched()">
+      <div class="stcb" id="sv-${id}-${n}"></div>
+    </td>
+    <td>
+      <input type="number" class="ti si" step="0.01" value="${d?d.isc:''}" min="0" oninput="stc('${id}');sched()">
+      <div class="stcb" id="si-${id}-${n}"></div>
+    </td>
+    <td><input type="number" class="ti sr2" value="${d?d.irr:''}" min="0" max="1500" oninput="stc('${id}');sched()"></td>
+    <td><input type="text" class="ti socp" value="${d?esc(d.ocp):'N/A'}" oninput="sched()" title="String fuse type/rating — N/A if not fitted"></td>
+    <td><input type="text" class="ti socv" value="${d?esc(d.ocpV):'N/A'}" oninput="sched()" title="DC voltage rating — N/A if not fitted"></td>
+    <td><input type="text" class="ti sock" value="${d?esc(d.ocpK):'N/A'}" oninput="sched()" title="Fault capacity kA — N/A if not fitted"></td>
+    <td>
+      <select class="ti spol" onchange="sched()" style="font-size:.72rem;font-weight:700;">
+        <option value="PASS"${!d||d.polarity==='PASS'?' selected':''}>✓ PASS</option>
+        <option value="FAIL"${d&&d.polarity==='FAIL'?' selected':''}>✗ FAIL</option>
+      </select>
+    </td>
+    <td><input type="text" class="ti sn" value="${d?esc(d.ins):'PASS'}" oninput="sched()"></td>
+    <td class="no-print"><button type="button" style="color:var(--danger);background:none;border:none;cursor:pointer;font-size:.9rem;" onclick="this.closest('tr').remove();updateStats();sched()">✕</button></td>`;
+  body.appendChild(tr);
+  if (d) stc(id);
+  updateStats();
+}
+
+/* ═══ STC CORRECTION ═══ */
+function stc(id) {
+  const body = document.getElementById('body-'+id);
+  const note = document.getElementById('stcnote-'+id);
+  if (!body) return;
+  let any = false;
+  body.querySelectorAll('.sr').forEach((row,i) => {
+    const voc = parseFloat(row.querySelector('.sv').value);
+    const isc = parseFloat(row.querySelector('.si').value);
+    const irr = parseFloat(row.querySelector('.sr2').value);
+    const vb  = document.getElementById(`sv-${id}-${i+1}`);
+    const ib  = document.getElementById(`si-${id}-${i+1}`);
+    if (vb&&ib&&irr>0&&irr!==1000&&!isNaN(voc)&&!isNaN(isc)) {
+      const f = 1000/irr;
+      vb.textContent=`STC: ${(voc*f).toFixed(1)}V`; vb.classList.add('on');
+      ib.textContent=`STC: ${(isc*f).toFixed(2)}A`; ib.classList.add('on');
+      any=true;
+    } else {
+      if(vb){vb.textContent='';vb.classList.remove('on');}
+      if(ib){ib.textContent='';ib.classList.remove('on');}
+    }
+  });
+  if (note) note.textContent = any ? '↳ Green values are STC-corrected (×1000/Irr). EN 50530 linear method.' : '';
+}
+
+/* ═══ STATS + AUTO kW ═══ */
+function updateStats() {
+  const watt = parseFloat(document.getElementById('modWatt').value)||0;
+  let mods=0,strs=0,invs=0,vocS=0,vocN=0;
+  document.querySelectorAll('.inv-card').forEach(c=>{
+    invs++;
+    c.querySelectorAll('.sr').forEach(r=>{
+      strs++;
+      mods += parseInt(r.querySelector('.sq')?.value)||0;
+      const v = parseFloat(r.querySelector('.sv')?.value);
+      if(!isNaN(v)&&v>0){vocS+=v;vocN++;}
+    });
+  });
+  const kw = watt>0 ? (mods*watt/1000) : 0;
+  const kwEl = document.getElementById('kwDc');
+  if(kwEl) kwEl.value = kw>0 ? kw.toFixed(2) : '';
+
+  setText('stKw', kw>0?kw.toFixed(2):'0.00');
+  setText('stInv', invs);
+  setText('stStr', strs);
+  setText('stMod', mods);
+  setText('stVoc', vocN>0?(vocS/vocN).toFixed(1)+'V':'—');
+
+  const boxes = document.querySelectorAll('.sbox');
+  const pass = [...boxes].filter(b=>b.innerText==='✓').length;
+  setText('stChk', `${pass}/${boxes.length}`);
+  updateCompletion(kw,invs,strs);
+}
+
+/* ═══ COMPLETION ═══ */
+function updateCompletion(kw,invs,strs) {
+  const fields = ['projNo','engName','siteName','siteAddress','sitePostcode','sysDesc','modModel','modWatt','modVoc','modIsc','engSignName'];
+  const filled = fields.filter(id=>{ const el=document.getElementById(id); return el&&el.value.trim()!==''; }).length;
+  const pct = Math.min(100, Math.round(
+    (filled/fields.length)*50 +
+    (invs>0?15:0) + (strs>0?10:0) + (kw>0?10:0) +
+    (sigPad&&!sigPad.isEmpty()?15:0)
+  ));
+  const fill = document.getElementById('cFill');
+  const pctEl = document.getElementById('cPct');
+  const pfill = document.getElementById('pFill');
+  const status = document.getElementById('cStatus');
+  if(fill)  fill.style.width  = pct+'%';
+  if(pctEl) pctEl.textContent = pct+'%';
+  if(pfill) pfill.style.width = pct+'%';
+  if(status) {
+    status.textContent = pct===100 ? '✓ Form complete — ready to print'
+      : pct>=75 ? `Almost there — ${100-pct}% remaining`
+      : pct>=40 ? `In progress — ${pct}% complete`
+      : 'Fill in form fields to track completion';
+  }
+}
+
+/* ═══ AUTOSAVE ═══ */
+function sched() { clearTimeout(asTimer); asTimer=setTimeout(doSave,1800); }
+function doSave() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(collect()));
+    const el=document.getElementById('asi');
+    if(el){el.textContent='● autosaved';el.className='asi show ok';setTimeout(()=>el.classList.remove('show'),2500);}
+  } catch(e){}
+}
+function tryRestore() {
+  try {
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(d&&(d.site?.name||d.header?.projNo)){
+      apply(d);
+      const el=document.getElementById('asi');
+      if(el){el.textContent='↩ session restored';el.className='asi show ok';setTimeout(()=>el.classList.remove('show'),3000);}
+    }
+  } catch(e){}
+}
+
+/* ═══ LOGO ═══ */
+function loadLogo(input) {
+  if(!input.files||!input.files[0]) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const src=e.target.result;
+    document.getElementById('uiLogo').src=src; document.getElementById('uiLogo').style.display='block';
+    document.getElementById('printLogo').src=src; document.getElementById('printLogo').style.display='block';
+    document.getElementById('logoHint').style.display='none';
+    sched();
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+/* ═══ COLLECT / APPLY ═══ */
+function collect() {
+  const gv=id=>{const e=document.getElementById(id);return e?e.value:'';};
+  const gc=id=>{const e=document.getElementById(id);return e?e.checked:false;};
+  const d={
+    header:{projNo:gv('projNo'),engName:gv('engName'),commDate:gv('commDate'),certDate:gv('certDate'),logo:document.getElementById('uiLogo').src||''},
+    site:{name:gv('siteName'),address:gv('siteAddress'),postcode:gv('sitePostcode')},
+    billing:{company:gv('billCompany'),address:gv('billAddress'),phone:gv('billPhone')},
+    system:{desc:gv('sysDesc'),kw:gv('kwDc'),loc:gv('sysLoc'),perf:gv('sysPerf'),circuits:gv('sysCircuits'),initial:gc('checkInitial'),periodic:gc('checkPeriodic')},
+    hardware:{model:gv('modModel'),watt:gv('modWatt'),voc:gv('modVoc'),isc:gv('modIsc'),beta:gv('modBeta'),roof:gv('roofType'),mount:gv('mountMake')},
+    instruments:{t1:gv('tstr1'),t1s:gv('tstr1Ser'),t1c:gv('tstr1Cal'),t2:gv('tstr2'),t2s:gv('tstr2Ser'),t2c:gv('tstr2Cal'),t3:gv('tstr3'),t3s:gv('tstr3Ser'),t3c:gv('tstr3Cal')},
+    inverters:[],checklist:[],
+    commission:{meters:[],engSignName:gv('engSignName'),signDate:gv('signDate'),engQual:gv('engQual'),dnoRef:gv('dnoRef'),engComments:gv('engComments'),sig:sigPad&&!sigPad.isEmpty()?sigPad.toDataURL():''}
+  };
+  document.querySelectorAll('.mr').forEach(r=>d.commission.meters.push({serial:r.querySelector('.ms')?.value||'',reading:r.querySelector('.mr2')?.value||''}));
+  document.querySelectorAll('.inv-card').forEach(c=>{
+    const inv={
+      make:c.querySelector('.imk')?.value||'',
+      serial:c.querySelector('.is')?.value||'',
+      lom:c.querySelector('.il')?.value||'PASS',
+      status:c.querySelector('.iv')?.value||'SATISFACTORY',
+      irPosEarth:c.querySelector('.irpe')?.value||'',
+      irNegEarth:c.querySelector('.irne')?.value||'',
+      irTestV:c.querySelector('.irtv')?.value||'1000',
+      earthCont:c.querySelector('.iec')?.value||'',
+      isoA:c.querySelector('.iia')?.value||'',
+      isoV:c.querySelector('.iiv')?.value||'',
+      isoLoc:c.querySelector('.iil')?.value||'',
+      strings:[]
+    };
+    c.querySelectorAll('.sr').forEach(r=>inv.strings.push({
+      mppt:r.querySelector('.sm')?.value||'',qty:r.querySelector('.sq')?.value||'',
+      dVoc:r.querySelector('.sdv')?.value||'',dIsc:r.querySelector('.sdi')?.value||'',
+      voc:r.querySelector('.sv')?.value||'',isc:r.querySelector('.si')?.value||'',
+      irr:r.querySelector('.sr2')?.value||'',
+      ocp:r.querySelector('.socp')?.value||'',ocpV:r.querySelector('.socv')?.value||'',ocpK:r.querySelector('.sock')?.value||'',
+      polarity:r.querySelector('.spol')?.value||'PASS',
+      ins:r.querySelector('.sn')?.value||''
+    }));
+    d.inverters.push(inv);
+  });
+  document.querySelectorAll('.ci').forEach(c=>d.checklist.push({
+    task:c.querySelector('.clabel')?.innerText||'',
+    status:c.querySelector('.sbox')?.innerText||'✓',
+    findings:c.querySelector('.findings')?.value||''
+  }));
+  return d;
+}
+
+function apply(d) {
+  const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+  const sc=(id,v)=>{const e=document.getElementById(id);if(e)e.checked=!!v;};
+  sv('projNo',d.header?.projNo); sv('engName',d.header?.engName); sv('commDate',d.header?.commDate); sv('certDate',d.header?.certDate);
+  if(d.header?.logo&&d.header.logo.startsWith('data:')){
+    document.getElementById('uiLogo').src=d.header.logo; document.getElementById('uiLogo').style.display='block';
+    document.getElementById('printLogo').src=d.header.logo; document.getElementById('printLogo').style.display='block';
+    document.getElementById('logoHint').style.display='none';
+  }
+  sv('siteName',d.site?.name); sv('siteAddress',d.site?.address); sv('sitePostcode',d.site?.postcode);
+  sv('billCompany',d.billing?.company); sv('billAddress',d.billing?.address); sv('billPhone',d.billing?.phone);
+  sv('sysDesc',d.system?.desc); sv('kwDc',d.system?.kw); sv('sysLoc',d.system?.loc); sv('sysPerf',d.system?.perf); sv('sysCircuits',d.system?.circuits);
+  sc('checkInitial',d.system?.initial); sc('checkPeriodic',d.system?.periodic);
+  sv('modModel',d.hardware?.model); sv('modWatt',d.hardware?.watt); sv('modVoc',d.hardware?.voc); sv('modIsc',d.hardware?.isc);
+  sv('modBeta',d.hardware?.beta); sv('roofType',d.hardware?.roof); sv('mountMake',d.hardware?.mount);
+  if(d.instruments){sv('tstr1',d.instruments.t1);sv('tstr1Ser',d.instruments.t1s);sv('tstr1Cal',d.instruments.t1c);sv('tstr2',d.instruments.t2);sv('tstr2Ser',d.instruments.t2s);sv('tstr2Cal',d.instruments.t2c);sv('tstr3',d.instruments.t3);sv('tstr3Ser',d.instruments.t3s);sv('tstr3Cal',d.instruments.t3c);}
+  sv('engSignName',d.commission?.engSignName); sv('signDate',d.commission?.signDate); sv('engQual',d.commission?.engQual); sv('dnoRef',d.commission?.dnoRef); sv('engComments',d.commission?.engComments);
+  document.getElementById('meterCont').innerHTML='';
+  (d.commission?.meters?.length?d.commission.meters:[null]).forEach(m=>addMeter(m||undefined));
+  document.getElementById('invCont').innerHTML='';
+  (d.inverters?.length?d.inverters:[null]).forEach(inv=>addInv(inv||undefined));
+  initChecklist(d.checklist ? d.checklist.map(c => ({status: c.status, findings: c.findings||''})) : null);
+  if(d.commission?.sig&&sigPad) sigPad.fromDataURL(d.commission.sig);
+  setTimeout(updateStats,150);
+}
+
+/* ═══ VALIDATE HARDWARE ═══ */
+function validateHW() {
+  ['modWatt','modVoc','modIsc'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const warnId={modWatt:'wWatt',modVoc:'wVoc',modIsc:'wIsc'}[id];
+    const warn=document.getElementById(warnId);
+    const bad=el.value!==''&&parseFloat(el.value)<=0;
+    el.classList.toggle('invalid',bad);
+    if(warn) warn.classList.toggle('on',bad);
+  });
+}
+
+/* ═══ SAVE / SHARE ═══ */
+async function saveData() {
+  const d = collect();
+  const filename = (d.site.name||'SolarCert') + '_' + (d.header.certDate||'report') + '.json';
+  const json = JSON.stringify(d, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+
+  /* ── Mobile: use Web Share API if available (triggers native share sheet — WhatsApp, email, etc.) ── */
+  if (navigator.canShare && navigator.share) {
+    const file = new File([blob], filename, {type:'application/json'});
+    if (navigator.canShare({files:[file]})) {
+      try {
+        await navigator.share({
+          title: 'Solar PV Report — ' + (d.site.name||''),
+          text: 'GreenBridge Solar Verification: ' + (d.site.name||'') + ' ' + (d.header.certDate||''),
+          files: [file]
+        });
+        return;
+      } catch(e) {
+        if (e.name === 'AbortError') return; /* user cancelled — do nothing */
+      }
+    }
+  }
+
+  /* ── Desktop fallback: normal download ── */
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* Update button label based on share capability */
+window.addEventListener('load', () => {
+  const btn = document.getElementById('saveBtn');
+  if (btn && navigator.share) btn.textContent = '📤 SHARE JSON';
+}, {once: true});
+function loadData(e) {
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{ try{apply(JSON.parse(ev.target.result));}catch(err){alert('Invalid JSON file.');} };
+  r.readAsText(f); e.target.value='';
+}
+
+/* ═══ PRINT — prepare print header before printing ═══ */
+function compilePrint() {
+  /* Show the dark print header block, hide the screen-only title */
+  const phb = document.querySelector('.print-header-block');
+  if(phb) phb.style.display='flex';
+  const site = document.getElementById('siteName').value||'Project';
+  const date = document.getElementById('certDate').value||new Date().toISOString().slice(0,10);
+  const old = document.title;
+  document.title = site+'_Solar_Verification_'+date;
+  window.print();
+  document.title = old;
+  /* Reset after print dialog closes */
+  setTimeout(()=>{ if(phb) phb.style.display='none'; },500);
+}
+
+/* ═══ SEND TO ENGINEER — URL SHARE ═══ */
+function sendToEngineer() {
+  const d = collect();
+  /* Strip signature and logo to keep URL short — engineer adds those on site */
+  const stripped = JSON.parse(JSON.stringify(d));
+  stripped.commission.sig = '';
+  stripped.header.logo = '';
+
+  const json = JSON.stringify(stripped);
+  const compressed = LZString.compressToEncodedURIComponent(json);
+  const url = location.href.split('?')[0].split('#')[0] + '?d=' + compressed;
+
+  const kb = (compressed.length / 1024).toFixed(1);
+  const note = document.getElementById('urlSizeNote');
+  if (note) note.textContent = `Link size: ~${kb} KB${parseFloat(kb) > 200 ? ' — large link, consider using Save/Share JSON instead' : ' — good to share'}`;
+
+  const input = document.getElementById('shareUrl');
+  if (input) input.value = url;
+
+  const modal = document.getElementById('shareModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function copyShareUrl() {
+  const input = document.getElementById('shareUrl');
+  if (!input) return;
+  navigator.clipboard.writeText(input.value).then(() => {
+    const btn = document.getElementById('copyBtn');
+    if (btn) { btn.textContent = 'Copied ✓'; btn.style.background = '#16a34a'; setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = 'var(--accent)'; }, 2000); }
+  }).catch(() => { input.select(); document.execCommand('copy'); });
+}
+
+function shareVia(method) {
+  const url = document.getElementById('shareUrl')?.value || '';
+  const siteName = document.getElementById('siteName')?.value || 'Solar job';
+  const msg = `GreenBridge Solar form pre-filled for ${siteName} — open this link to load: ${url}`;
+  if (method === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  if (method === 'sms')      window.open('sms:?body=' + encodeURIComponent(msg), '_blank');
+  if (method === 'email')    window.open('mailto:?subject=' + encodeURIComponent('Solar PV Form — ' + siteName) + '&body=' + encodeURIComponent(msg), '_blank');
+}
+
+function closeShareModal() {
+  const modal = document.getElementById('shareModal');
+  if (modal) modal.style.display = 'none';
+}
+
+/* Close modal on backdrop click */
+document.getElementById('shareModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeShareModal();
+});
+
+/* ═══ AUTO-LOAD FROM URL ON PAGE OPEN ═══ */
+function tryLoadFromUrl() {
+  try {
+    const params = new URLSearchParams(location.search);
+    const compressed = params.get('d');
+    if (!compressed) return;
+    const json = LZString.decompressFromEncodedURIComponent(compressed);
+    if (!json) return;
+    const data = JSON.parse(json);
+    apply(data);
+    /* Clean URL so reload doesn't re-apply */
+    history.replaceState(null, '', location.pathname);
+    const el = document.getElementById('asi');
+    if (el) { el.textContent = '📲 Form loaded from shared link'; el.className = 'asi show ok'; setTimeout(() => el.classList.remove('show'), 4000); }
+  } catch(e) { console.warn('URL load failed:', e); }
+}
+/* ═══ CLEAR / NEW JOB ═══ */
+function clearForm() {
+  if (!confirm('Start a new job? This will clear all data on the form.\n\nMake sure you have saved or shared the current job first.')) return;
+
+  /* Clear all simple inputs, selects, textareas */
+  document.querySelectorAll('#form input:not([type=checkbox]):not([type=file]), #form select, #form textarea').forEach(el => {
+    el.value = '';
+  });
+
+  /* Reset checkboxes */
+  const chkInit = document.getElementById('checkInitial');
+  const chkPer  = document.getElementById('checkPeriodic');
+  if (chkInit) chkInit.checked = true;
+  if (chkPer)  chkPer.checked  = false;
+
+  /* Reset dates to today */
+  const today = new Date();
+  ['certDate','commDate','signDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.valueAsDate = today;
+  });
+
+  /* Reset engineer name and circuit default */
+  const engName = document.getElementById('engSignName');
+  if (engName) engName.value = 'GRAHAM EVANS';
+  const circ = document.getElementById('sysCircuits');
+  if (circ) circ.value = 'DC ONLY';
+
+  /* Clear logo */
+  document.getElementById('uiLogo').src = '';
+  document.getElementById('uiLogo').style.display = 'none';
+  document.getElementById('printLogo').src = '';
+  document.getElementById('printLogo').style.display = 'none';
+  document.getElementById('logoHint').style.display = '';
+
+  /* Clear signatures */
+  if (sigPad) sigPad.clear();
+
+  /* Reset inverter groups — one blank group */
+  document.getElementById('invCont').innerHTML = '';
+  addInv();
+
+  /* Reset meter — one blank row */
+  document.getElementById('meterCont').innerHTML = '';
+  addMeter();
+
+  /* Reset checklist — all ticked green */
+  initChecklist();
+
+  /* Clear autosave so old job doesn't restore */
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+
+  /* Confirm toast */
+  const asi = document.getElementById('asi');
+  if (asi) { asi.textContent = '✓ Cleared — ready for new job'; asi.className = 'asi show ok'; setTimeout(() => asi.classList.remove('show'), 3000); }
+
+  updateStats();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
